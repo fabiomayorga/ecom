@@ -81,6 +81,11 @@ class MainComponent extends Component {
 
     }
 
+
+    onCreate = ()=>{
+        alert("kkk")
+    }
+
     render() {
         return (
             <Grid container className="mainContainer">
@@ -97,7 +102,7 @@ class MainComponent extends Component {
 
                     <div style={{ width: '100%' }}>
 
-                        <CreateUserComponent></CreateUserComponent>
+                        <CreateUserComponent creation={this.getAll}></CreateUserComponent>
 
                         <TableContainer >
                             <Table stickyHeader aria-label="sticky table">
