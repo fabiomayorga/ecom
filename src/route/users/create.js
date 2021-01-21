@@ -11,37 +11,52 @@ import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Snackbar from '@material-ui/core/Snackbar';
 
-function Tooltip() {
+import MuiAlert from '@material-ui/lab/Alert';
+import { makeStyles } from '@material-ui/core/styles';
 
-    const [state, setState] = React.useState({
-        open: true,
-        vertical: 'top',
-        horizontal: 'center',
-    });
+function Alert(props) {
+    return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
 
-    const { vertical, horizontal, open } = state;
+const useStyles = makeStyles((theme) => ({
+    root: {
+        width: '100%',
+        '& > * + *': {
+            marginTop: theme.spacing(2),
+        },
+    },
+}));
 
-    const handleClick = (newState) => () => {
-        setState({ open: true, ...newState });
+function CustomizedSnackbars() {
+    const classes = useStyles();
+    const [open, setOpen] = React.useState(true);
+
+    const handleClick = () => {
+        setOpen(true);
     };
 
-    const handleClose = () => {
-        setState({ ...state, open: false });
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+
+        setOpen(true);
     };
 
     return (
-        <div>
-
-            {/*           <Snackbar
-                anchorOrigin={{ vertical, horizontal }}
-                open
-                onClose={handleClose}
-                message="I love snacks"
-                key={vertical + horizontal}
-            /> */}
-
-
-
+        <div className={classes.root}>
+            <Button variant="outlined" onClick={handleClick}>
+                Open success snackbar
+        </Button>
+            <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+                <Alert onClose={handleClose} severity="success">
+                    This is a success message!
+          </Alert>
+            </Snackbar>
+            <Alert severity="error">This is an error message!</Alert>
+            <Alert severity="warning">This is a warning message!</Alert>
+            <Alert severity="info">This is an information message!</Alert>
+            <Alert severity="success">This is a success message!</Alert>
         </div>
     );
 }
@@ -54,42 +69,46 @@ class CreateUserComponent extends Component {
         this.state = {
             open: false,
             scroll: 'paper',
+
             openTooltip: false,
+            tooltopSeverity: 'success',
+            tooltopMessage: 'Usuario Creado satisfactoriamente',
+
             formFields: {
                 names: {
-                    data: '',
+                    data: 'Fabio',
                     stateError: false
                 },
                 lastname: {
-                    data: '',
+                    data: 'Duarte',
                     stateError: false
                 },
                 surname: {
-                    data: '',
+                    data: 'Mayorga',
                     stateError: false
                 },
                 phone: {
-                    data: '',
+                    data: '123456481',
                     stateError: false
                 },
                 email: {
-                    data: '',
+                    data: 'fabio@ecom.co',
                     stateError: false
                 },
                 identificationnumber: {
-                    data: '',
+                    data: '1235487',
                     stateError: false
                 },
                 identificationtype: {
-                    data: 12222,
+                    data: 1,
                     stateError: false
                 },
                 bankaccounttype: {
-                    data: '',
+                    data: 1,
                     stateError: false
                 },
                 accountnumber: {
-                    data: '',
+                    data: '123123123',
                     stateError: false
                 },
             }
@@ -157,6 +176,7 @@ class CreateUserComponent extends Component {
             identificationtype: this.state.formFields.identificationtype.data.value,
             accountnumber: this.state.formFields.accountnumber.data.value,
             bankaccounttype: this.state.formFields.bankaccounttype.data.value,
+            phone: this.state.formFields.phone.data.value,
         }
         console.log(data)
         let o = await fetch('http://localhost:4200/user', {
@@ -172,8 +192,8 @@ class CreateUserComponent extends Component {
             .then(response => {
                 return response.json();
             })
-            .then(text => {
-                this.setState({openTooltip: true})
+            .then(error => {
+                this.setState({ openTooltip: true, tooltopMessage: error.message, tooltopSeverity: 'error' })
             });
 
 
@@ -182,9 +202,6 @@ class CreateUserComponent extends Component {
 
     }
 
-    componentDidMount() {
-        console.log(this.state)
-    }
 
     render() {
 
@@ -193,14 +210,13 @@ class CreateUserComponent extends Component {
         return (
 
             <Fragment>
+    
 
-                <Snackbar
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                    open={this.state.openTooltip}
-                    message="I love snacks"
-                    autoHideDuration={6000}
-                    onClose={() => this.setState({openTooltip: false})}
-                />
+                <Snackbar open={this.state.openTooltip} autoHideDuration={6000} onClose={() => this.setState({ openTooltip: false })}>
+                    <Alert onClose={() => this.setState({ openTooltip: false })} severity={this.state.tooltopSeverity}>
+                        {this.state.tooltopMessage}
+                    </Alert>
+                </Snackbar>
 
                 <Button onClick={this.handleToggle} color="primary">Crear usuario</Button>
                 <Dialog open={open} onClose={this.handleToggle} scroll={scroll} fullWidth={true}>
@@ -212,6 +228,7 @@ class CreateUserComponent extends Component {
                             <div style={{ margin: "8px 0px" }}>
                                 <TextField required inputRef={(c) => { this.state.formFields.names.data = c }} id="names" label="Nombres"
                                     name="names"
+                                    value={"Fabio"}
                                     onChange={
                                         (evt) => {
                                             console.log("you have typed: ", evt.target.value);
@@ -223,7 +240,7 @@ class CreateUserComponent extends Component {
                             <div style={{ margin: "16px 0px" }}>
                                 <TextField required inputRef={(c) => { this.state.formFields.surname.data = c }} id="surname" label="Primer Apellido"
                                     name="surname"
-
+                                    value={"Mayorga"}
                                     onChange={
                                         (evt) => {
                                             console.log("you have typed: ", evt.target.value);
@@ -236,6 +253,7 @@ class CreateUserComponent extends Component {
                             <div style={{ margin: "16px 0px" }}>
                                 <TextField required inputRef={(c) => { this.state.formFields.lastname.data = c }} id="lastname" label="Segundo Apellido"
                                     name="lastname"
+                                    value={"Duarte"}
                                     onChange={
                                         (evt) => {
                                             console.log("you have typed: ", evt.target.value);
@@ -247,6 +265,7 @@ class CreateUserComponent extends Component {
                             <div style={{ margin: "16px 0px" }}>
                                 <TextField required inputRef={(c) => { this.state.formFields.email.data = c }} id="email" label="Email"
                                     name="email"
+                                    value={"fabio@ecom.co"}
                                     onChange={
                                         (evt) => {
                                             console.log("you have typed: ", evt.target.value);
@@ -255,6 +274,21 @@ class CreateUserComponent extends Component {
                                     }
                                     className="col-sm-12 col-md-12 col-lg-12" />
                             </div>
+
+                            <div style={{ margin: "16px 0px" }}>
+                                <TextField required inputRef={(c) => { this.state.formFields.phone.data = c }} id="phone" label="Teléfono"
+                                    name="phone"
+                                    value={"123123123"}
+                                    onChange={
+                                        (evt) => {
+                                            console.log("you have typed: ", evt.target.value);
+                                            console.log(this.state.formFields.phone.data.value)
+                                        }
+                                    }
+                                    className="col-sm-12 col-md-12 col-lg-12" />
+                            </div>
+
+
                             <div style={{ margin: "16px 0px" }}>
 
                                 <InputLabel id="it-label">Tipo de documento</InputLabel>
@@ -272,8 +306,9 @@ class CreateUserComponent extends Component {
                                 </Select>
                             </div>
                             <div style={{ margin: "16px 0px" }}>
-                                <TextField required inputRef={(c) => { this.state.formFields.identificationnumber.data = c }} id="email" label="Número documento"
-                                    name="email"
+                                <TextField required inputRef={(c) => { this.state.formFields.identificationnumber.data = c }} id="identificationnumber" label="Número documento"
+                                    name="identificationnumber"
+                                    value={"3123123123"}
                                     onChange={
                                         (evt) => {
                                             console.log("you have typed: ", evt.target.value);
@@ -284,11 +319,12 @@ class CreateUserComponent extends Component {
                             </div>
 
                             <div style={{ margin: "16px 0px" }}>
-                                <InputLabel id="ac-label">Tipo de documento</InputLabel>
+                                <InputLabel id="ac-label">Tipo de cuenta</InputLabel>
                                 <Select
                                     required
                                     labelId="ac-label"
                                     id="ac-select"
+                                    value={"1"}
                                     inputRef={(c) => { this.state.formFields.bankaccounttype.data = c }}
                                     className="col-sm-12 col-md-12 col-lg-12"
                                 >
@@ -299,7 +335,7 @@ class CreateUserComponent extends Component {
                             <div style={{ margin: "16px 0px" }}>
                                 <TextField required number inputRef={(c) => { this.state.formFields.accountnumber.data = c }} id="accountnumber" label="Número de cuenta bancaría"
                                     name="accountnumber"
-                                    onChange={
+                                    value={"0000000"}                                    onChange={
                                         (evt) => {
                                             console.log("you have typed: ", evt.target.value);
                                             console.log(this.state.formFields.accountnumber.data.value)
