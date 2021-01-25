@@ -17,33 +17,73 @@ import { DataGrid } from '@material-ui/data-grid';
 import axios from 'axios';
 
 import CreateUserComponent from './users/create';
+import EditUserComponent from './users/edit';
+import DeleteUserComponent from './users/delete'
+
+
+import CreateWarehouseComponent from './warehouses/create';
+import EditWarehouseComponent from './warehouses/edit';
+import DeleteWarehouseComponent from './warehouses/delete';
+
+const columns2 = [
+    { id: 'name', label: 'Razón social', minWidth: 170 },
+    { id: 'address', label: 'Dirección', minWidth: 100, align: 'center' },
+    {
+        id: 'phone',
+        label: 'Telefono',
+        minWidth: 170,
+        align: 'center',
+        format: (value) => value.toLocaleString('en-US'),
+    },
+    {
+        id: 'userid',
+        label: 'Propietario',
+        minWidth: 170,
+        align: 'center',
+        format: (value) => value.toLocaleString('en-US'),
+    },
+    {
+        id: 'action',
+        label: 'Acciones',
+        minWidth: 170,
+        align: 'center',
+        format: (value) => value.toFixed(2),
+    },
+];
+
 
 
 const columns = [
-    { id: 'name', label: 'Name', minWidth: 170 },
-    { id: 'surname', label: 'ISO\u00a0Code', minWidth: 100, align: 'center' },
+    { id: 'name', label: 'Nombres', minWidth: 170 },
+    { id: 'surname', label: 'Primer Apellido', minWidth: 100, align: 'center' },
     {
         id: 'lastname',
-        label: 'Population',
+        label: 'Segundo Apellido',
         minWidth: 170,
         align: 'center',
         format: (value) => value.toLocaleString('en-US'),
     },
     {
         id: 'email',
-        label: 'Size\u00a0(km\u00b2)',
+        label: 'Email',
         minWidth: 170,
         align: 'center',
         format: (value) => value.toLocaleString('en-US'),
     },
     {
-        id: 'phone',
-        label: 'Density',
+        id: 'action',
+        label: 'Acciones',
         minWidth: 170,
         align: 'center',
         format: (value) => value.toFixed(2),
     },
 ];
+
+
+
+function EditD(d) {
+    console.log(d)
+}
 
 
 class MainComponent extends Component {
@@ -52,11 +92,13 @@ class MainComponent extends Component {
         super(props);
         this.state = {
             users: [
-
-            ]
+            ],
+            warehouses: [
+            ],
+            editModalState: false,
+            user: []
         };
     }
-
 
     getAll = async (i) => {
 
@@ -76,14 +118,39 @@ class MainComponent extends Component {
 
     }
 
+
+    getAllWare = async (i) => {
+
+        let o = await fetch('http://localhost:4200/warehouses', {
+            method: 'GET',
+            mode: 'cors', // <---
+            cache: 'default'
+        }).then(response => {
+            return response.json();
+        })
+
+        console.log(o)
+
+        this.setState({ warehouses: o });
+
+        console.log(this.state.users);
+
+    }
+
     componentDidMount() {
         this.getAll();
+        this.getAllWare();
+    }
+
+    onCreate = () => {
 
     }
 
 
-    onCreate = ()=>{
-        alert("kkk")
+    editUser(u) {
+        console.log(u)
+        this.setState({ user: u });
+
     }
 
     render() {
@@ -102,7 +169,7 @@ class MainComponent extends Component {
 
                     <div style={{ width: '100%' }}>
 
-                        <CreateUserComponent creation={this.getAll}></CreateUserComponent>
+                        <CreateUserComponent creation={this.getAll}></CreateUserComponent>         
 
                         <TableContainer >
                             <Table stickyHeader aria-label="sticky table">
@@ -122,28 +189,93 @@ class MainComponent extends Component {
                                 <TableBody>
                                     {this.state.users.map((row) => {
                                         return (
-                                            <TableRow hover role="checkbox" tabIndex={-1} key={row.name}>
+                                            <TableRow hover role="checkbox" tabIndex={-1} key={row.identificationnumer}>
 
                                                 <TableCell key={row.surname} align={'left'}>
                                                     {row.name}
                                                 </TableCell>
 
                                                 <TableCell key={row.lastname} align={'center'}>
-                                                    {row.name}
+                                                    {row.surname}
                                                 </TableCell>
 
                                                 <TableCell key={row.email} align={'center'}>
-                                                    {row.name}
+                                                    {row.lastname}
                                                 </TableCell>
 
                                                 <TableCell key={row.phone} align={'center'}>
+                                                    {row.email}
+                                                </TableCell>
+
+                                                <TableCell key={row.accountnumber + row.email} align={'center'}>
+
+                                                    <div style={{ display: 'flex' }}>
+                                                        <EditUserComponent edited={this.getAll} data={row} key={row.id}></EditUserComponent>
+                                                        <DeleteUserComponent edited={this.getAll} data={row} key={row.id + 'del'}></DeleteUserComponent>
+                                                    </div>
+
+                                                </TableCell>
+
+                                            </TableRow>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+
+                    </div>
+
+
+
+                    <p style={{marginTop : '150px'}}>Listado de almacenes creados en la plataforma</p>
+
+                    <div style={{ width: '100%' }}>
+
+                        <CreateWarehouseComponent creation={this.getAllWare}></CreateWarehouseComponent>
+
+                        <TableContainer >
+                            <Table stickyHeader aria-label="sticky table">
+                                <TableHead>
+                                    <TableRow>
+                                        {columns2.map((column) => (
+                                            <TableCell
+                                                key={column.id}
+                                                align={column.align}
+                                                style={{ minWidth: column.minWidth }}
+                                            >
+                                                {column.label}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {this.state.warehouses.map((row) => {
+                                        return (
+                                            <TableRow hover role="checkbox" tabIndex={-1} key={row.identificationnumer}>
+
+                                                <TableCell key={row.name} align={'left'}>
                                                     {row.name}
                                                 </TableCell>
 
-                                                <TableCell key={row.density} align={'center'}>
-                                                    <IconButton onClick={() => this.edit(row.name)}>
-                                                        <Edit color="primary" />
-                                                    </IconButton>
+                                                <TableCell key={row.address} align={'center'}>
+                                                    {row.address}
+                                                </TableCell>
+
+                                                <TableCell key={row.phone} align={'center'}>
+                                                    {row.phone}
+                                                </TableCell>
+
+                                                <TableCell key={row.ownernames} align={'center'}>
+                                                    {row.ownernames} {row.surname} {row.lastname} 
+                                                </TableCell>
+
+                                                <TableCell key={row.accountnumber + row.email} align={'center'}>
+
+                                                    <div style={{ display: 'flex' }}>
+                                                        <EditWarehouseComponent edited={this.getAllWare} data={row} key={row.id}></EditWarehouseComponent>
+                                                        <DeleteWarehouseComponent edited={this.getAllWare} data={row} key={row.id + 'del'}></DeleteWarehouseComponent>
+                                                    </div>
+
                                                 </TableCell>
 
                                             </TableRow>

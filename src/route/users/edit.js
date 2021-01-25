@@ -13,9 +13,8 @@ import Snackbar from '@material-ui/core/Snackbar';
 
 import MuiAlert from '@material-ui/lab/Alert';
 import { makeStyles } from '@material-ui/core/styles';
-
-import { PersonAdd } from '@material-ui/icons';
-
+import IconButton from '@material-ui/core/IconButton';
+import { Edit } from '@material-ui/icons';
 function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
 }
@@ -29,8 +28,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-class CreateUserComponent extends Component {
-
+class EditUserComponent extends Component {
 
     constructor() {
         super()
@@ -40,31 +38,31 @@ class CreateUserComponent extends Component {
 
             openTooltip: false,
             tooltopSeverity: 'success',
-            tooltopMessage: 'Usuario Creado satisfactoriamente',
+            tooltopMessage: 'Usuario editado satisfactoriamente',
 
             formFields: {
                 names: {
-                    data: '',
+                    data: 'Fabio',
                     stateError: false
                 },
                 lastname: {
-                    data: '',
+                    data: 'Duarte',
                     stateError: false
                 },
                 surname: {
-                    data: '',
+                    data: 'Mayorga',
                     stateError: false
                 },
                 phone: {
-                    data: '',
+                    data: '123456481',
                     stateError: false
                 },
                 email: {
-                    data: '',
+                    data: 'fabio@ecom.co',
                     stateError: false
                 },
                 identificationnumber: {
-                    data: '',
+                    data: '1235487',
                     stateError: false
                 },
                 identificationtype: {
@@ -76,26 +74,85 @@ class CreateUserComponent extends Component {
                     stateError: false
                 },
                 accountnumber: {
-                    data: '',
+                    data: '123123123',
                     stateError: false
                 },
             }
         }
+
+        console.log("construc")
+
+        //this.getAlert = this.getAlert.bind(this);
     }
 
+    componentDidMount() {
+        //this.props.setClick(this.getAlert);
+        console.log("cdm")
 
+    }
+
+    getAlert() {
+        this.handleToggle();
+    }
 
     handleToggle = () => {
         this.setState({ open: !this.state.open })
+        console.log(this.props.data)
+
+        this.setState({
+            formFields: {
+                names: {
+                    data: this.props.data.name,
+                    stateError: false
+                },
+                lastname: {
+                    data: this.props.data.lastname,
+                    stateError: false
+                },
+                surname: {
+                    data: this.props.data.surname,
+                    stateError: false
+                },
+                phone: {
+                    data: this.props.data.phone,
+                    stateError: false
+                },
+                email: {
+                    data: this.props.data.email,
+                    stateError: false
+                },
+                identificationnumber: {
+                    data: this.props.data.identificationnumber,
+                    stateError: false
+                },
+                identificationtype: {
+                    data: this.props.data.identificationtype,
+                    stateError: false
+                },
+                bankaccounttype: {
+                    data: this.props.data.bankaccounttype,
+                    stateError: false
+                },
+                accountnumber: {
+                    data: this.props.data.accountnumber,
+                    stateError: false
+                },
+            }
+        })
+
+        console.log(this.state)
+
     }
 
     restat = () => {
         console.log(this.state.formFields.names.data.value)
     }
 
-    create = async () => {
+
+    edit = async () => {
 
         let data = {
+            id: this.props.data.id,
             names: this.state.formFields.names.data.value,
             surname: this.state.formFields.surname.data.value,
             lastname: this.state.formFields.lastname.data.value,
@@ -106,10 +163,9 @@ class CreateUserComponent extends Component {
             bankaccounttype: this.state.formFields.bankaccounttype.data.value,
             phone: this.state.formFields.phone.data.value,
         }
-
-        let o = await fetch('http://localhost:4200/user', {
+        console.log(data)
+        let o = await fetch('http://localhost:4200/user/edit', {
             method: 'POST',
-            mode: 'cors',
             cache: 'default',
             headers: {
                 'Content-Type': 'application/json'
@@ -119,21 +175,48 @@ class CreateUserComponent extends Component {
             .then(response => {
 
                 console.log(response)
-                if (response.status == 200 || response.status == 201) {
-                    this.setState({ openTooltip: true, tooltopMessage: 'Usuario creado satisfactoriamente.', tooltopSeverity: 'success' })
+                if (response.status == 200 || response.status == 202) {
+                    this.setState({ openTooltip: true, tooltopMessage: 'Usuario editado satisfactoriamente.', tooltopSeverity: 'success' })
                     this.handleToggle();
-                    this.props.creation();
+                    this.props.edited();
                 } else {
 
                     let error = response.json().then(e => {
-                        this.setState({ openTooltip: true, tooltopMessage: e.message, tooltopSeverity: 'error' })
+                        let state = this.state;
+                        state.openTooltip = true;
+                        state.open = false;
+                        state.tooltopMessage = e.message;
+                        state.tooltopSeverity = 'error';
+                        console.log(state)
+                        this.setState(state)
                     });
 
                 }
             })
 
+
     }
 
+    editField(key, value) {
+        console.log(value)
+        let state = this.state
+        state.formFields[key].data = 'asdasd';
+
+        console.log(state)
+        console.log(state.formFields.accountnumber.data.value)
+
+        let keys = Object.keys(state.formFields)
+
+        for (let k of keys) {
+            if (k != key) {
+                state.formFields[k].data = state.formFields[k].data.value;
+            } else {
+                state.formFields[key].data = value;
+            }
+        }
+        console.log(state)
+        this.setState(state);
+    }
 
     render() {
 
@@ -143,26 +226,19 @@ class CreateUserComponent extends Component {
 
             <Fragment>
 
+                <IconButton variant="contained" color="primary"  style={{margin: 'auto'}} onClick={this.handleToggle}>
+                    <Edit color="primary" />
+                </IconButton>
+
+
                 <Snackbar open={this.state.openTooltip} autoHideDuration={6000} onClose={() => this.setState({ openTooltip: false })}>
                     <Alert onClose={() => this.setState({ openTooltip: false })} severity={this.state.tooltopSeverity}>
                         {this.state.tooltopMessage}
                     </Alert>
                 </Snackbar>
 
-                <div>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        size="large"
-                        style={{ float: 'right', margin: '30px 0px', backgroundColor: '#4CAF50 !important' }}
-                        onClick={this.handleToggle}
-                        className="successButton"
-                        startIcon={<PersonAdd />}
-                    > Crear Usuario </Button>
-                </div>
-
                 <Dialog open={open} onClose={this.handleToggle} scroll={scroll} fullWidth={true}>
-                    <DialogTitle id="scroll-dialog-title">Creación de usuarios</DialogTitle>
+                    <DialogTitle id="scroll-dialog-title">Edición de usuario</DialogTitle>
                     <DialogContent dividers={scroll === 'paper'} >
 
                         <form noValidate autoComplete="off">
@@ -170,10 +246,10 @@ class CreateUserComponent extends Component {
                             <div style={{ margin: "8px 0px" }}>
                                 <TextField required inputRef={(c) => { this.state.formFields.names.data = c }} id="names" label="Nombres"
                                     name="names"
+                                    value={this.state.formFields.names.data}
                                     onChange={
                                         (evt) => {
-                                            console.log("you have typed: ", evt.target.value);
-                                            console.log(this.state.formFields.names.data.value)
+                                            this.editField('names', evt.target.value)
                                         }
                                     }
                                     className="col-sm-12 col-md-12 col-lg-12" />
@@ -181,10 +257,10 @@ class CreateUserComponent extends Component {
                             <div style={{ margin: "16px 0px" }}>
                                 <TextField required inputRef={(c) => { this.state.formFields.surname.data = c }} id="surname" label="Primer Apellido"
                                     name="surname"
+                                    value={this.state.formFields.surname.data}
                                     onChange={
                                         (evt) => {
-                                            console.log("you have typed: ", evt.target.value);
-                                            console.log(this.state.formFields.surname.data.value)
+                                            this.editField('surname', evt.target.value)
                                         }
                                     }
                                     className="col-sm-12 col-md-12 col-lg-12" />
@@ -193,10 +269,10 @@ class CreateUserComponent extends Component {
                             <div style={{ margin: "16px 0px" }}>
                                 <TextField required inputRef={(c) => { this.state.formFields.lastname.data = c }} id="lastname" label="Segundo Apellido"
                                     name="lastname"
+                                    value={this.state.formFields.lastname.data}
                                     onChange={
                                         (evt) => {
-                                            console.log("you have typed: ", evt.target.value);
-                                            console.log(this.state.formFields.lastname.data.value)
+                                            this.editField('lastname', evt.target.value)
                                         }
                                     }
                                     className="col-sm-12 col-md-12 col-lg-12" />
@@ -204,10 +280,10 @@ class CreateUserComponent extends Component {
                             <div style={{ margin: "16px 0px" }}>
                                 <TextField required inputRef={(c) => { this.state.formFields.email.data = c }} id="email" label="Email"
                                     name="email"
+                                    value={this.state.formFields.email.data}
                                     onChange={
                                         (evt) => {
-                                            console.log("you have typed: ", evt.target.value);
-                                            console.log(this.state.formFields.email.data.value)
+                                            this.editField('email', evt.target.value)
                                         }
                                     }
                                     className="col-sm-12 col-md-12 col-lg-12" />
@@ -216,10 +292,10 @@ class CreateUserComponent extends Component {
                             <div style={{ margin: "16px 0px" }}>
                                 <TextField required inputRef={(c) => { this.state.formFields.phone.data = c }} id="phone" label="Teléfono"
                                     name="phone"
+                                    value={this.state.formFields.phone.data}
                                     onChange={
                                         (evt) => {
-                                            console.log("you have typed: ", evt.target.value);
-                                            console.log(this.state.formFields.phone.data.value)
+                                            this.editField('phone', evt.target.value)
                                         }
                                     }
                                     className="col-sm-12 col-md-12 col-lg-12" />
@@ -233,8 +309,14 @@ class CreateUserComponent extends Component {
                                     required
                                     labelId="it-label"
                                     id="it-select"
+                                    value={this.state.formFields.identificationtype.data}
                                     inputRef={(c) => { this.state.formFields.identificationtype.data = c }}
                                     className="col-sm-12 col-md-12 col-lg-12"
+                                    onChange={
+                                        (evt) => {
+                                            this.editField('identificationtype', evt.target.value)
+                                        }
+                                    }
                                 >
                                     <MenuItem value={1}>Cédula de ciudadanía</MenuItem>
                                     <MenuItem value={2}>Cédula de extrangería</MenuItem>
@@ -244,11 +326,11 @@ class CreateUserComponent extends Component {
                             <div style={{ margin: "16px 0px" }}>
                                 <TextField required inputRef={(c) => { this.state.formFields.identificationnumber.data = c }} id="identificationnumber" label="Número documento"
                                     name="identificationnumber"
+                                    value={this.state.formFields.identificationnumber.data}
                                     type="number"
                                     onChange={
                                         (evt) => {
-                                            console.log("you have typed: ", evt.target.value);
-                                            console.log(this.state.formFields.identificationnumber.data.value)
+                                            this.editField('identificationnumber', evt.target.value)
                                         }
                                     }
                                     className="col-sm-12 col-md-12 col-lg-12" />
@@ -260,8 +342,14 @@ class CreateUserComponent extends Component {
                                     required
                                     labelId="ac-label"
                                     id="ac-select"
+                                    value={this.state.formFields.bankaccounttype.data}
                                     inputRef={(c) => { this.state.formFields.bankaccounttype.data = c }}
                                     className="col-sm-12 col-md-12 col-lg-12"
+                                    onChange={
+                                        (evt) => {
+                                            this.editField('bankaccounttype', evt.target.value)
+                                        }
+                                    }
                                 >
                                     <MenuItem value={1}>Ahorros</MenuItem>
                                     <MenuItem value={2}>Corriente</MenuItem>
@@ -271,21 +359,20 @@ class CreateUserComponent extends Component {
                                 <TextField required number inputRef={(c) => { this.state.formFields.accountnumber.data = c }} id="accountnumber" label="Número de cuenta bancaría"
                                     name="accountnumber"
                                     type="number"
+                                    value={this.state.formFields.accountnumber.data}
                                     onChange={
                                         (evt) => {
-                                            console.log("you have typed: ", evt.target.value);
-                                            console.log(this.state.formFields.accountnumber.data.value)
+                                            this.editField('accountnumber', evt.target.value)
                                         }
                                     }
                                     className="col-sm-12 col-md-12 col-lg-12" />
                             </div>
+
                         </form>
                     </DialogContent>
-
                     <DialogActions>
-
                         <Button onClick={this.handleToggle} color="primary"> Cancelar </Button>
-                        <Button onClick={this.create} variant="contained" color="primary">Crear Usuario</Button>
+                        <Button onClick={this.edit} variant="contained" color="primary">Editar Usuario</Button>
                     </DialogActions>
                 </Dialog>
             </Fragment>
@@ -295,4 +382,4 @@ class CreateUserComponent extends Component {
 
 }
 
-export default CreateUserComponent
+export default EditUserComponent

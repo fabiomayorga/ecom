@@ -14,7 +14,7 @@ import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
 import { makeStyles } from '@material-ui/core/styles';
 
-import { PersonAdd } from '@material-ui/icons';
+import { Home } from '@material-ui/icons';
 
 function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-class CreateUserComponent extends Component {
+class CreateWarehouseComponent extends Component {
 
 
     constructor() {
@@ -40,18 +40,18 @@ class CreateUserComponent extends Component {
 
             openTooltip: false,
             tooltopSeverity: 'success',
-            tooltopMessage: 'Usuario Creado satisfactoriamente',
-
+            tooltopMessage: 'Almacen Creado satisfactoriamente',
+            users: [],
             formFields: {
-                names: {
+                name: {
                     data: '',
                     stateError: false
                 },
-                lastname: {
+                address: {
                     data: '',
                     stateError: false
                 },
-                surname: {
+                bankaccountnumber: {
                     data: '',
                     stateError: false
                 },
@@ -59,24 +59,20 @@ class CreateUserComponent extends Component {
                     data: '',
                     stateError: false
                 },
-                email: {
-                    data: '',
-                    stateError: false
-                },
-                identificationnumber: {
-                    data: '',
-                    stateError: false
-                },
-                identificationtype: {
+                productid: {
                     data: 1,
                     stateError: false
                 },
-                bankaccounttype: {
+                maxvolume: {
+                    data: '',
+                    stateError: false
+                },
+                userid: {
                     data: 1,
                     stateError: false
                 },
-                accountnumber: {
-                    data: '',
+                nit: {
+                    data: 1,
                     stateError: false
                 },
             }
@@ -84,30 +80,45 @@ class CreateUserComponent extends Component {
     }
 
 
-
     handleToggle = () => {
         this.setState({ open: !this.state.open })
+        this.getUsers();
     }
 
     restat = () => {
         console.log(this.state.formFields.names.data.value)
     }
 
+    getUsers = async () => {
+
+        let o = await fetch('http://localhost:4200/user', {
+            method: 'GET',
+            mode: 'cors', // <---
+            cache: 'default'
+        }).then(response => {
+            return response.json();
+        })
+
+        let state = this.state;
+        state.users = o
+        this.setState(state)
+
+    }
+
     create = async () => {
 
         let data = {
-            names: this.state.formFields.names.data.value,
-            surname: this.state.formFields.surname.data.value,
-            lastname: this.state.formFields.lastname.data.value,
-            email: this.state.formFields.email.data.value,
-            identificationnumber: this.state.formFields.identificationnumber.data.value,
-            identificationtype: this.state.formFields.identificationtype.data.value,
-            accountnumber: this.state.formFields.accountnumber.data.value,
-            bankaccounttype: this.state.formFields.bankaccounttype.data.value,
+            name: this.state.formFields.name.data.value,
+            address : this.state.formFields.address.data.value,
+            bankaccountnumber: this.state.formFields.bankaccountnumber.data.value,
             phone: this.state.formFields.phone.data.value,
+            productid: this.state.formFields.productid.data.value,
+            userid: this.state.formFields.userid.data.value,
+            maxvolume: this.state.formFields.maxvolume.data.value,
+            nit: this.state.formFields.nit.data.value,
         }
 
-        let o = await fetch('http://localhost:4200/user', {
+        let o = await fetch('http://localhost:4200/warehouses', {
             method: 'POST',
             mode: 'cors',
             cache: 'default',
@@ -120,7 +131,7 @@ class CreateUserComponent extends Component {
 
                 console.log(response)
                 if (response.status == 200 || response.status == 201) {
-                    this.setState({ openTooltip: true, tooltopMessage: 'Usuario creado satisfactoriamente.', tooltopSeverity: 'success' })
+                    this.setState({ openTooltip: true, tooltopMessage: 'Almacen creado satisfactoriamente.', tooltopSeverity: 'success' })
                     this.handleToggle();
                     this.props.creation();
                 } else {
@@ -133,7 +144,6 @@ class CreateUserComponent extends Component {
             })
 
     }
-
 
     render() {
 
@@ -157,64 +167,76 @@ class CreateUserComponent extends Component {
                         style={{ float: 'right', margin: '30px 0px', backgroundColor: '#4CAF50 !important' }}
                         onClick={this.handleToggle}
                         className="successButton"
-                        startIcon={<PersonAdd />}
-                    > Crear Usuario </Button>
+                        startIcon={<Home />}
+                    > Crear Almacen </Button>
                 </div>
 
                 <Dialog open={open} onClose={this.handleToggle} scroll={scroll} fullWidth={true}>
-                    <DialogTitle id="scroll-dialog-title">Creación de usuarios</DialogTitle>
+                    <DialogTitle id="scroll-dialog-title">Creación de Almacen</DialogTitle>
                     <DialogContent dividers={scroll === 'paper'} >
 
                         <form noValidate autoComplete="off">
 
+
+                            <div style={{ margin: "16px 0px" }}>
+
+                                <InputLabel id="it-label">Usuario dueño del almacen</InputLabel>
+                                <Select
+                                    required
+                                    labelId="tp-label"
+                                    id="u-select"
+                                    inputRef={(c) => { this.state.formFields.userid.data = c }}
+                                    className="col-sm-12 col-md-12 col-lg-12">
+
+                                    {this.state.users.map((row) => {
+                                        return (
+                                            <MenuItem value={row.id}>{row.name} {row.surname} {row.lastname} ({row.identificationnumber}) </MenuItem>
+                                        )
+                                    })
+                                    }
+
+                                </Select>
+                            </div>
+
+
+                            <div style={{ margin: "16px 0px" }}>
+                                <TextField required inputRef={(c) => { this.state.formFields.nit.data = c }} id="nit" label="NIT"
+                                    name="nit"
+                                    type="number"
+                                    onChange={
+                                        (evt) => {
+                                            console.log("you have typed: ", evt.target.value);
+                                        }
+                                    }
+                                    className="col-sm-12 col-md-12 col-lg-12" />
+                            </div>
+
+
                             <div style={{ margin: "8px 0px" }}>
-                                <TextField required inputRef={(c) => { this.state.formFields.names.data = c }} id="names" label="Nombres"
-                                    name="names"
+                                <TextField required inputRef={(c) => { this.state.formFields.name.data = c }} id="name" label="Nombre del Almacen"
+                                    name="name"
                                     onChange={
                                         (evt) => {
                                             console.log("you have typed: ", evt.target.value);
-                                            console.log(this.state.formFields.names.data.value)
+                                            console.log(this.state.formFields.name.data.value)
                                         }
                                     }
                                     className="col-sm-12 col-md-12 col-lg-12" />
                             </div>
                             <div style={{ margin: "16px 0px" }}>
-                                <TextField required inputRef={(c) => { this.state.formFields.surname.data = c }} id="surname" label="Primer Apellido"
-                                    name="surname"
+                                <TextField required inputRef={(c) => { this.state.formFields.address.data = c }} id="address" label="Dirección"
+                                    name="address"
                                     onChange={
                                         (evt) => {
                                             console.log("you have typed: ", evt.target.value);
-                                            console.log(this.state.formFields.surname.data.value)
-                                        }
-                                    }
-                                    className="col-sm-12 col-md-12 col-lg-12" />
-                            </div>
-
-                            <div style={{ margin: "16px 0px" }}>
-                                <TextField required inputRef={(c) => { this.state.formFields.lastname.data = c }} id="lastname" label="Segundo Apellido"
-                                    name="lastname"
-                                    onChange={
-                                        (evt) => {
-                                            console.log("you have typed: ", evt.target.value);
-                                            console.log(this.state.formFields.lastname.data.value)
-                                        }
-                                    }
-                                    className="col-sm-12 col-md-12 col-lg-12" />
-                            </div>
-                            <div style={{ margin: "16px 0px" }}>
-                                <TextField required inputRef={(c) => { this.state.formFields.email.data = c }} id="email" label="Email"
-                                    name="email"
-                                    onChange={
-                                        (evt) => {
-                                            console.log("you have typed: ", evt.target.value);
-                                            console.log(this.state.formFields.email.data.value)
+                                            console.log(this.state.formFields.address.data.value)
                                         }
                                     }
                                     className="col-sm-12 col-md-12 col-lg-12" />
                             </div>
 
                             <div style={{ margin: "16px 0px" }}>
-                                <TextField required inputRef={(c) => { this.state.formFields.phone.data = c }} id="phone" label="Teléfono"
+                                <TextField type="number" required inputRef={(c) => { this.state.formFields.phone.data = c }} id="phone" label="Teléfono del establecimiento"
                                     name="phone"
                                     onChange={
                                         (evt) => {
@@ -224,68 +246,50 @@ class CreateUserComponent extends Component {
                                     }
                                     className="col-sm-12 col-md-12 col-lg-12" />
                             </div>
-
-
+                            <div style={{ margin: "16px 0px" }}>
+                                <TextField required inputRef={(c) => { this.state.formFields.bankaccountnumber.data = c }} id="bankaccountnumber" label="Número de cuenta bancaría"
+                                    name="bankaccountnumber"
+                                    type="number"
+                                    onChange={
+                                        (evt) => {
+                             
+                                        }
+                                    }
+                                    className="col-sm-12 col-md-12 col-lg-12" />
+                            </div>
                             <div style={{ margin: "16px 0px" }}>
 
-                                <InputLabel id="it-label">Tipo de documento</InputLabel>
+                                <InputLabel id="it-label">Tipo de producto</InputLabel>
                                 <Select
                                     required
-                                    labelId="it-label"
-                                    id="it-select"
-                                    inputRef={(c) => { this.state.formFields.identificationtype.data = c }}
+                                    labelId="tp-label"
+                                    id="tp-select"
+                                    inputRef={(c) => { this.state.formFields.productid.data = c }}
                                     className="col-sm-12 col-md-12 col-lg-12"
                                 >
-                                    <MenuItem value={1}>Cédula de ciudadanía</MenuItem>
-                                    <MenuItem value={2}>Cédula de extrangería</MenuItem>
-                                    <MenuItem value={3}>Pasaporte</MenuItem>
+                                    <MenuItem value={1}>Café</MenuItem>
+                                    <MenuItem value={2}>Cacao</MenuItem>
                                 </Select>
                             </div>
                             <div style={{ margin: "16px 0px" }}>
-                                <TextField required inputRef={(c) => { this.state.formFields.identificationnumber.data = c }} id="identificationnumber" label="Número documento"
-                                    name="identificationnumber"
+                                <TextField required inputRef={(c) => { this.state.formFields.maxvolume.data = c }} id="maxvolume" label="Cantidad máxima (Kg)"
+                                    name="maxvolume"
                                     type="number"
                                     onChange={
                                         (evt) => {
                                             console.log("you have typed: ", evt.target.value);
-                                            console.log(this.state.formFields.identificationnumber.data.value)
                                         }
                                     }
                                     className="col-sm-12 col-md-12 col-lg-12" />
                             </div>
 
-                            <div style={{ margin: "16px 0px" }}>
-                                <InputLabel id="ac-label">Tipo de cuenta</InputLabel>
-                                <Select
-                                    required
-                                    labelId="ac-label"
-                                    id="ac-select"
-                                    inputRef={(c) => { this.state.formFields.bankaccounttype.data = c }}
-                                    className="col-sm-12 col-md-12 col-lg-12"
-                                >
-                                    <MenuItem value={1}>Ahorros</MenuItem>
-                                    <MenuItem value={2}>Corriente</MenuItem>
-                                </Select>
-                            </div>
-                            <div style={{ margin: "16px 0px" }}>
-                                <TextField required number inputRef={(c) => { this.state.formFields.accountnumber.data = c }} id="accountnumber" label="Número de cuenta bancaría"
-                                    name="accountnumber"
-                                    type="number"
-                                    onChange={
-                                        (evt) => {
-                                            console.log("you have typed: ", evt.target.value);
-                                            console.log(this.state.formFields.accountnumber.data.value)
-                                        }
-                                    }
-                                    className="col-sm-12 col-md-12 col-lg-12" />
-                            </div>
                         </form>
                     </DialogContent>
 
                     <DialogActions>
 
                         <Button onClick={this.handleToggle} color="primary"> Cancelar </Button>
-                        <Button onClick={this.create} variant="contained" color="primary">Crear Usuario</Button>
+                        <Button onClick={this.create} variant="contained" color="primary">Crear Almacen</Button>
                     </DialogActions>
                 </Dialog>
             </Fragment>
@@ -295,4 +299,4 @@ class CreateUserComponent extends Component {
 
 }
 
-export default CreateUserComponent
+export default CreateWarehouseComponent
